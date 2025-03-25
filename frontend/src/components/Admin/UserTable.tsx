@@ -181,11 +181,11 @@ const UserTable: React.FC<UserTableProps> = ({ users, selectedIds, setSelectedId
       </div>
 
       <div className="flex items-center justify-between px-2 bg-gray-100">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground hidden md:block">
           Page {pageIndex + 1} of {totalPages}
         </div>
-        <div className="">{selectedIds.length > 0 && <div className="text-sm text-muted-foreground">{selectedIds.length} selected</div>}</div>
-        <div className="flex items-center space-x-2">
+        <div className="hidden md:block">{selectedIds.length > 0 && <div className="text-sm text-muted-foreground">{selectedIds.length} selected</div>}</div>
+        <div className="flex items-center space-x-2 justify-between w-full md:w-auto">
           <Button variant="outline" size="sm" onClick={() => setPageIndex(0)} disabled={pageIndex === 0}>
             First
           </Button>

@@ -125,8 +125,8 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="h-screen flex justify-center items-center w-screen bg-cover" style={{ backgroundImage: `url(${Background})` }}>
-      <div className="p-4 w-full max-w-6xl   mx-auto bg-white   rounded shadow-lg">
+    <div className="p-2 h-screen flex justify-center items-center w-screen bg-cover" style={{ backgroundImage: `url(${Background})` }}>
+      <div className=" p-2 md:p-4 w-full max-w-6xl   mx-auto bg-white   rounded shadow-lg">
         <div className="md:flex justify-between items-center mb-4">
           <div className="md:flex items-center gap-4">
             {/* <img src={Logo} */}
