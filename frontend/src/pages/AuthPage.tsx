@@ -72,7 +72,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="flex bg-cover items-center justify-center h-screen bg-gray-100" style={{ backgroundImage: `url(${Background})` }}>
+    <div className="flex bg-cover items-center justify-center h-screen bg-white/80" style={{ backgroundImage: `url(${Background})` }}>
       <div className="bg-white p-6 rounded shadow-md w-96">
         <img src={Logo} alt="Logo" className="w-24 mx-auto mb-4" />
         <form onSubmit={handleSubmit(onSubmit)}>

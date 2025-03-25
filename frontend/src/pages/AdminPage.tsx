@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Button } from "@/components/ui/button";
 import { IoMdLogOut } from "react-icons/io";
 import Logo from "@/assets/logo.jpg";
+import Background from "@/assets/background.jpg";
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -117,41 +118,43 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="p-4 max-w-6xl mt-10 mx-auto">
-      <div className="md:flex justify-between items-center mb-4">
-        <div className="md:flex items-center gap-4">
-          {/* <img src={Logo} */}
-          <img src={Logo} alt="Logo" className="w-24 mx-auto mb-4" />
+    <div className="h-screen flex justify-center items-center w-screen bg-cover" style={{ backgroundImage: `url(${Background})` }}>
+      <div className="p-4 w-full max-w-6xl   mx-auto bg-white   rounded shadow-lg">
+        <div className="md:flex justify-between items-center mb-4">
+          <div className="md:flex items-center gap-4">
+            {/* <img src={Logo} */}
+            <img src={Logo} alt="Logo" className="w-24 mx-auto mb-4" />
 
-          <h1 className="text-2xl text-center  font-bold">Admin Panel</h1>
+            <h1 className="text-2xl text-center  font-bold">Admin Panel</h1>
+          </div>
+
+          <div className=" my-5 md:mt-0  justify-center md:justify-start  flex items-center">
+            <span className="mr-4">Welcome, {user?.name}</span>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant={"destructive"} onClick={logout}>
+                  <IoMdLogOut />
+                </Button>
+              </TooltipTrigger>
+
+              <TooltipContent>
+                <p>Logout</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
-        <div className=" my-5 md:mt-0  justify-center md:justify-start  flex items-center">
-          <span className="mr-4">Welcome, {user?.name}</span>
+        <Toolbar
+          selectedIds={selectedIds}
+          onBlock={() => handleUserAction("block")}
+          onUnblock={() => handleUserAction("unblock")}
+          onDelete={() => handleUserAction("delete")}
+          // actionLoading={actionLoading} // Pass loading state to prevent re-triggering action
+        />
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant={"destructive"} onClick={logout}>
-                <IoMdLogOut />
-              </Button>
-            </TooltipTrigger>
-
-            <TooltipContent>
-              <p>Logout</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
+        <UserTable users={users} selectedIds={selectedIds} setSelectedIds={setSelectedIds} />
       </div>
-
-      <Toolbar
-        selectedIds={selectedIds}
-        onBlock={() => handleUserAction("block")}
-        onUnblock={() => handleUserAction("unblock")}
-        onDelete={() => handleUserAction("delete")}
-        // actionLoading={actionLoading} // Pass loading state to prevent re-triggering action
-      />
-
-      <UserTable users={users} selectedIds={selectedIds} setSelectedIds={setSelectedIds} />
     </div>
   );
 };
