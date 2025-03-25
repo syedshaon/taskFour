@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { pool } from "../config/db.js";
 import { registerSchema, loginSchema } from "../validators/userValidator.js";
+import { z } from "zod";
 
 // ✅ Register User
 const registerUser = async (req, res) => {
@@ -12,7 +13,7 @@ const registerUser = async (req, res) => {
     // Check if email already exists
     const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [parsedData.email]);
     if (existingUser.rowCount > 0) {
-      return res.status(409).json({ message: "Email already registered" }); // 409 Conflict
+      return res.status(409).json({ message: "Email already registered" });
     }
 
     // Hash password
@@ -23,15 +24,17 @@ const registerUser = async (req, res) => {
 
     res.status(201).json({ message: "User registered successfully", user: newUser.rows[0] });
   } catch (error) {
-    if (error.errors) {
+    if (error instanceof z.ZodError) {
       return res.status(400).json({ errors: error.errors.map((err) => err.message) });
     }
+    console.error("Server Error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 // ✅ Login User
 const loginUser = async (req, res) => {
+  // console.log("get called");
   try {
     // Validate input
     const parsedData = loginSchema.parse(req.body);
@@ -57,20 +60,17 @@ const loginUser = async (req, res) => {
     await pool.query("UPDATE users SET last_login = NOW() WHERE id = $1", [user.rows[0].id]);
 
     // Generate JWT Token
-    const token = jwt.sign(
-      { id: user.rows[0].id },
-      process.env.JWT_SECRET || "fallback-secret-key", // Ensure JWT_SECRET is set
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ id: user.rows[0].id }, process.env.JWT_SECRET || "fallback-secret-key", { expiresIn: "1h" });
 
     // Return user without password
     const { password, ...userWithoutPassword } = user.rows[0];
 
     res.json({ token, user: userWithoutPassword });
   } catch (error) {
-    if (error.errors) {
+    if (error instanceof z.ZodError) {
       return res.status(400).json({ errors: error.errors.map((err) => err.message) });
     }
+    console.error("Server Error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -83,10 +83,10 @@ const getAuthenticatedUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json(userQuery.rows[0]); // ✅ Return user details
+    res.json(userQuery.rows[0]);
   } catch (error) {
     console.error("Error fetching authenticated user:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 interface UserType {
   id: number;
@@ -30,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
 
       // Login Function with Improved Error Handling
       login: async (email, password) => {
+        const toastId = toast.loading("Logging in...");
         try {
           const res = await axios.post("http://localhost:5000/api/auth/login", {
             email,
@@ -38,21 +40,24 @@ export const useAuthStore = create<AuthState>()(
           console.log(res);
           const { user, token } = res.data;
           set({ user, token, isAuthenticated: true });
+          toast.success("Logged in successfully!", { id: toastId });
 
           return true;
         } catch (error: any) {
           console.error("Login failed:", error);
 
-          // Extract error message from server response
+          // // Extract error message from server response
           const errorMessage = error.response?.data?.message || "Invalid email or password.";
           console.error("Error message:", errorMessage);
-          return false; // Ensure we return false on failed login
+          toast.error(errorMessage, { id: toastId });
+          return error; // Ensure we return false on failed login
         }
       },
 
       // Logout Function
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false });
+        toast.success("Logged out successfully!");
       },
 
       // Fetch Logged-In User Details

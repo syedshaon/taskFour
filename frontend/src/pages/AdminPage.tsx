@@ -5,16 +5,22 @@ import UserTable from "../components/Admin/UserTable";
 import Toolbar from "../components/Admin/Toolbar";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { IoMdLogOut } from "react-icons/io";
+import Logo from "@/assets/logo.jpg";
 
 const AdminPage = () => {
   const navigate = useNavigate();
-  const { token, fetchUser, logout, isAuthenticated } = useAuthStore();
+  const { token, fetchUser, logout, isAuthenticated, user } = useAuthStore();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [actionLoading, setActionLoading] = useState(false); // Loading state for action
 
   const fetchUsers = async () => {
     try {
+      setLoading(true); // Ensure loading is true when fetching users
       const res = await axios.get("http://localhost:5000/api/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -22,6 +28,8 @@ const AdminPage = () => {
     } catch (error) {
       console.error("Failed to fetch users:", error);
       toast.error("Failed to load users");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -30,6 +38,12 @@ const AdminPage = () => {
       toast.error("Please select at least one user");
       return;
     }
+
+    if (actionLoading) return; // Prevent re-triggering the action
+
+    setActionLoading(true); // Set action loading state to true to block further actions
+
+    const toastId = toast.loading("Processing..."); // Start loading toast
 
     try {
       const endpoint = {
@@ -40,19 +54,38 @@ const AdminPage = () => {
 
       const method = action === "delete" ? "DELETE" : "POST";
 
-      await axios({
+      const response = await axios({
         method,
         url: `http://localhost:5000${endpoint}`,
         data: { ids: selectedIds },
         headers: { Authorization: `Bearer ${token}` },
       });
+      // on delete and block action if selectedIds include current user id then logout
+      if (action === "delete" || action === "block") {
+        if (user?.id !== undefined && selectedIds.includes(user.id)) {
+          logout();
+          navigate("/login");
+        }
+      }
+      if (response && response.data) {
+        toast.success(response.data.message, { id: toastId }); // Replace loading toast with success
+      }
 
-      toast.success(`Users ${action}ed successfully`);
-      await fetchUsers();
-      setSelectedIds([]);
+      await fetchUsers(); // Re-fetch users after action
+      setSelectedIds([]); // Clear selected IDs
     } catch (error) {
-      console.error(`Failed to ${action} users:`, error);
-      toast.error(`Failed to ${action} users`);
+      const err = error as any;
+
+      // Only trigger error once if there's a failure
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message, { id: toastId }); // Replace loading toast with error
+      } else {
+        toast.error("Failed to unblock users", { id: toastId }); // Default error message
+      }
+
+      throw error; // Propagate the error
+    } finally {
+      setActionLoading(false); // Reset action loading state to allow further actions
     }
   };
 
@@ -80,19 +113,43 @@ const AdminPage = () => {
   }, [isAuthenticated, loading, navigate]);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen text-xl">Loading...</div>;
+    return <div className="flex  justify-center items-center h-screen text-xl">Loading...</div>;
   }
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Admin Panel</h1>
-        <button onClick={logout} className="cursor-pointer bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-          Logout
-        </button>
+    <div className="p-4 max-w-6xl mt-10 mx-auto">
+      <div className="md:flex justify-between items-center mb-4">
+        <div className="md:flex items-center gap-4">
+          {/* <img src={Logo} */}
+          <img src={Logo} alt="Logo" className="w-24 mx-auto mb-4" />
+
+          <h1 className="text-2xl text-center  font-bold">Admin Panel</h1>
+        </div>
+
+        <div className=" my-5 md:mt-0  justify-center md:justify-start  flex items-center">
+          <span className="mr-4">Welcome, {user?.name}</span>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant={"destructive"} onClick={logout}>
+                <IoMdLogOut />
+              </Button>
+            </TooltipTrigger>
+
+            <TooltipContent>
+              <p>Logout</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
 
-      <Toolbar selectedIds={selectedIds} onBlock={() => handleUserAction("block")} onUnblock={() => handleUserAction("unblock")} onDelete={() => handleUserAction("delete")} />
+      <Toolbar
+        selectedIds={selectedIds}
+        onBlock={() => handleUserAction("block")}
+        onUnblock={() => handleUserAction("unblock")}
+        onDelete={() => handleUserAction("delete")}
+        // actionLoading={actionLoading} // Pass loading state to prevent re-triggering action
+      />
 
       <UserTable users={users} selectedIds={selectedIds} setSelectedIds={setSelectedIds} />
     </div>

@@ -12,8 +12,15 @@ export const loginSchema = z.object({
 });
 
 // Validate user ID (assumes UUID format)
-export const userIdSchema = z.object({
-  id: z.preprocess((val) => Number(val), z.number().int().positive()), // ✅ Converts to number & validates
+export const userIdsSchema = z.object({
+  ids: z.array(
+    z.preprocess((val) => {
+      if (typeof val === "string" && !isNaN(Number(val))) {
+        return Number(val);
+      }
+      return val;
+    }, z.number().int().positive())
+  ),
 });
 
 // Validate status update request

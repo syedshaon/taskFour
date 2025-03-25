@@ -1,8 +1,6 @@
-import { useState } from "react";
-import axios from "axios";
-import { useAuthStore } from "../../store/zustandStore";
-import toast from "react-hot-toast";
-import Spinner from "../Spinner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "../ui/button";
+import { FaLock, FaLockOpen, FaTrash } from "react-icons/fa6";
 
 interface ToolbarProps {
   selectedIds: number[];
@@ -12,61 +10,51 @@ interface ToolbarProps {
 }
 
 const Toolbar = ({ selectedIds, onBlock, onUnblock, onDelete }: ToolbarProps) => {
-  const { token } = useAuthStore();
-  const [loading, setLoading] = useState<"block" | "unblock" | "delete" | null>(null);
-
-  const handleAction = async (action: "block" | "unblock" | "delete") => {
-    if (!selectedIds.length) {
-      toast.error("Please select at least one user");
-      return;
-    }
-
-    if (action === "delete" && !confirm(`Permanently delete ${selectedIds.length} user(s)?`)) {
-      return;
-    }
-
-    setLoading(action);
-    try {
-      const endpoint = {
-        block: "/api/users/block",
-        unblock: "/api/users/unblock",
-        delete: "/api/users/delete",
-      }[action];
-
-      await axios({
-        method: action === "delete" ? "DELETE" : "POST",
-        url: `http://localhost:5000${endpoint}`,
-        data: { ids: selectedIds },
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      toast.success(`Successfully ${action}ed ${selectedIds.length} user(s)`);
-
-      if (action === "block") onBlock();
-      if (action === "unblock") onUnblock();
-      if (action === "delete") onDelete();
-    } catch (error) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message || `${action} operation failed` : `${action} operation failed`;
-
-      toast.error(errorMessage);
-    } finally {
-      setLoading(null);
-    }
-  };
+  const isDisabled = !selectedIds.length;
 
   return (
     <div className="flex space-x-2 mb-4">
-      <button onClick={() => handleAction("block")} disabled={!selectedIds.length || !!loading} className="btn-danger cursor-pointer">
-        {loading === "block" ? <Spinner /> : "Block"}
-      </button>
+      <TooltipProvider>
+        {/* Block Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={() => onBlock()} disabled={isDisabled}>
+              <FaLock />
+              Block
+            </Button>
+          </TooltipTrigger>
 
-      <button onClick={() => handleAction("unblock")} disabled={!selectedIds.length || !!loading} className="btn-success cursor-pointer">
-        {loading === "unblock" ? <Spinner /> : "Unblock"}
-      </button>
+          <TooltipContent>
+            <p>Block users</p>
+          </TooltipContent>
+        </Tooltip>
 
-      <button onClick={() => handleAction("delete")} disabled={!selectedIds.length || !!loading} className="btn-warning cursor-pointer">
-        {loading === "delete" ? <Spinner /> : "Delete"}
-      </button>
+        {/* Unblock Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={() => onUnblock()} disabled={isDisabled} className="btn-success cursor-pointer">
+              <FaLockOpen />
+            </Button>
+          </TooltipTrigger>
+
+          <TooltipContent>
+            <p>Unblock Users</p>
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Delete Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant={"destructive"} onClick={() => onDelete()} disabled={isDisabled} className="btn-warning  cursor-pointer">
+              <FaTrash />
+            </Button>
+          </TooltipTrigger>
+
+          <TooltipContent>
+            <p>Delete Users</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
