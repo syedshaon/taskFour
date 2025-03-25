@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/db.js"; // Database connection
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import statusMonitor from "express-status-monitor";
 
 dotenv.config();
 const app = express();
@@ -12,6 +13,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use(statusMonitor()); // Enable monitoring
+
+app.get("/", (req, res) => {
+  res.send("Friend's Zone Server is alive! 🚀");
+});
+
+// Keep-alive endpoint
+app.get("/ping", (req, res) => {
+  res.send("Pong! 🏓");
+});
 // Routes with API prefix
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
