@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import axios from "axios";
 import toast from "react-hot-toast";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface UserType {
   id: number;
@@ -33,7 +34,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         const toastId = toast.loading("Logging in...");
         try {
-          const res = await axios.post("http://localhost:5000/api/auth/login", {
+          const res = await axios.post(`${apiUrl}/auth/login`, {
             email,
             password,
           });
@@ -66,7 +67,7 @@ export const useAuthStore = create<AuthState>()(
         if (!token) return;
 
         try {
-          const res = await axios.get("http://localhost:5000/api/auth/me", {
+          const res = await axios.get(`${apiUrl}/auth/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 

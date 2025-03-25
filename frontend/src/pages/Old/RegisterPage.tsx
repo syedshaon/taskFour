@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 // ✅ Define Zod schema for validation
 const registerSchema = z.object({
@@ -31,7 +32,7 @@ const RegisterPage = () => {
   // ✅ Handle form submission
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", data);
+      const response = await axios.post(`${apiUrl}/auth/register`, data);
 
       if (response.status === 201) {
         toast.success("Registration successful! Redirecting to login...", { duration: 3000 });

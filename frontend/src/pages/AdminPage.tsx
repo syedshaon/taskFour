@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { IoMdLogOut } from "react-icons/io";
 import Logo from "@/assets/logo.jpg";
 import Background from "@/assets/background.jpg";
+const apiUrl = import.meta.env.VITE_API_URL;
+// import LoadingSpinner from "@/components/LoadingSpinner";
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -22,7 +24,7 @@ const AdminPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true); // Ensure loading is true when fetching users
-      const res = await axios.get("http://localhost:5000/api/users", {
+      const res = await axios.get(`${apiUrl}/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(res.data);
@@ -48,16 +50,16 @@ const AdminPage = () => {
 
     try {
       const endpoint = {
-        block: "/api/users/block",
-        unblock: "/api/users/unblock",
-        delete: "/api/users/delete",
+        block: "users/block",
+        unblock: "users/unblock",
+        delete: "users/delete",
       }[action];
 
       const method = action === "delete" ? "DELETE" : "POST";
 
       const response = await axios({
         method,
-        url: `http://localhost:5000${endpoint}`,
+        url: `${apiUrl}/${endpoint}`,
         data: { ids: selectedIds },
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -114,7 +116,12 @@ const AdminPage = () => {
   }, [isAuthenticated, loading, navigate]);
 
   if (loading) {
-    return <div className="flex  justify-center items-center h-screen text-xl">Loading...</div>;
+    return (
+      <div style={{ backgroundImage: `url(${Background})` }} className="flex  justify-center items-center h-screen w-screen bg-cover text-3xl  text-white ">
+        Loading...
+      </div>
+    );
+    // return <LoadingSpinner />;
   }
 
   return (

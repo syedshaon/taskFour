@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 import { useAuthStore } from "../store/zustandStore";
 import Logo from "@/assets/logo.jpg";
 import Background from "@/assets/background.jpg";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 // ✅ Define schemas
 const loginSchema = z.object({
@@ -28,7 +29,7 @@ const AuthPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const isLogin = location.pathname === "/login";
+  const isLogin = location.pathname === "/login" || location.pathname === "/";
   const { login } = useAuthStore();
 
   useEffect(() => {
@@ -59,7 +60,7 @@ const AuthPage = () => {
     } else {
       // Register logic
       try {
-        const response = await axios.post("http://localhost:5000/api/auth/register", data);
+        const response = await axios.post(`${apiUrl}/auth/register`, data);
         if (response.status === 201) {
           toast.success("Registration successful! Redirecting to login...");
           reset();
