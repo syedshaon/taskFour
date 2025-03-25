@@ -11,13 +11,13 @@ backend/node_modules
 
 backend/dist
 backend/dist-ssr
-backend/.env
+ 
 *.local
-*.env
+ 
 
 frontend/node_modules
 frontend/dist-ssr
-frontend/.env
+ 
 
 # Editor directories and files
 .vscode/*
@@ -31,3 +31,7 @@ frontend/.env
 *.sw?
 
  
+
+ # Ignore environment files
+frontend/.env*
+backend/.env*
